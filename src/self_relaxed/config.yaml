@@ -1,0 +1,21 @@
+model:
+  name: resnet18
+  pretrained: true
+  num_classes: 4
+
+optimizer:
+  name: AdamW
+  lr: 1e-4
+  weight_decay: 1e-4
+
+scheduler:
+  name: CosineAnnealingLR
+  T_max: 150
+  eta_min: 1e-6
+
+training:
+  max_epoch: 150
+  batch_size: 64
+  forget_num_gradual: 10
+  temp: 0.1
+  metrics: [loss, acc, mae, rmse, f1, precision, recall, kappa, pure_ratio]

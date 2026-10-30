@@ -1,0 +1,4 @@
+.venv/
+__pycache__/
+expr/
+dataset/limuc/patient_based_classified_images*
