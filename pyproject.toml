@@ -4,7 +4,7 @@ version = "1.0.0"
 description = "Ord-NLL: Negative Label Learning for Ordinal Noisy Labels (IEEE Access 2026)"
 requires-python = ">=3.10"
 dependencies = [
-    "numpy",
+    "numpy<2.5",  # numpy 2.5 changed RandomState.multinomial; <2.5 regenerates dataset/limuc/5fold exactly
     "omegaconf",
     "pandas",
     "pillow",

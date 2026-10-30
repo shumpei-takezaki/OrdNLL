@@ -9,21 +9,52 @@ This repository reproduces the LIMUC experiments (Tables 2, 4, 6 and 7).
 ## Quick start
 
 ```bash
-uv sync                                 # PyTorch for CUDA 12.6; edit the index URL in pyproject.toml for others
-uv run python dataset/download_limuc.py # LIMUC from Zenodo (1.9 GB, CC BY 4.0)
-bash scripts/run.sh ordnll quasi 0.4    # Ord-NLL, 5 folds -> expr/ordnll/limuc/quasi-0.4/results.txt
-bash scripts/run.sh ordnll_plus quasi 0.4
+uv sync
+uv run python dataset/download_limuc.py
+bash scripts/run.sh ordnll quasi 0.4       # Ord-NLL
+bash scripts/run.sh ordnll_plus quasi 0.4  # Ord-NLL+ (uses the Ord-NLL checkpoints above)
 ```
 
-`scripts/run.sh METHOD NOISE_TYPE NOISE_RATE` trains five folds and reports the mean ± std of the last-10-epoch test
-metrics. To reproduce everything:
+## Setup
+
+Requires [uv](https://docs.astral.sh/uv/) and an NVIDIA GPU.
 
 ```bash
-bash scripts/reproduce_main.sh      # Tables 2 and 4
-bash scripts/reproduce_ablation.sh  # Tables 6 and 7
+git clone https://github.com/shumpei-takezaki/OrdNLL.git
+cd OrdNLL
+uv sync
 ```
 
-## Methods
+PyTorch is installed for CUDA 12.6 (NVIDIA driver >= 560). For another CUDA version, change the `pytorch-cu126`
+index URL in `pyproject.toml`.
+
+## Data
+
+```bash
+uv run python dataset/download_limuc.py
+```
+
+This downloads [LIMUC](https://zenodo.org/records/5827695) (1.9 GB, CC BY 4.0) to
+`dataset/limuc/patient_based_classified_images/`.
+
+The patient-disjoint 5-fold splits and the noisy labels used in the paper are included in `dataset/limuc/5fold/`.
+Each CSV has the reference label (`label`) and the noisy label (`noisy_label`, used for training and validation).
+
+| Directory | Noise | ρ |
+|---|---|---|
+| `quasi-0.2` / `quasi-0.4` | Quasi-Gaussian | 0.1 / 0.2 |
+| `truncated-0.2` / `truncated-0.4` | Truncated | 0.15 / 0.3 |
+
+They can be regenerated with `dataset/csv_5fold.py` and `dataset/noisy_csv_5fold.py`.
+
+## Training and evaluation
+
+```bash
+bash scripts/run.sh METHOD NOISE_TYPE NOISE_RATE   # NOISE_TYPE: quasi | truncated, NOISE_RATE: 0.2 | 0.4
+```
+
+This trains five folds and writes the mean ± std of the last-10-epoch test metrics (accuracy, MAE, macro F1, …) to
+`expr/METHOD/limuc/NOISE_TYPE-NOISE_RATE/results.txt`. Hyperparameters are in `src/METHOD/config.yaml`.
 
 | Paper | `METHOD` | | Paper | `METHOD` |
 |---|---|---|---|---|
@@ -32,20 +63,15 @@ bash scripts/reproduce_ablation.sh  # Tables 6 and 7
 | F-correction | `f_correction` | | Garg | `garg` |
 | Reweight | `reweight` | | Self-relaxed | `self_relaxed` |
 | Mixup | `mixup` | | NLL | `nll` |
-| CDR | `cdr` | | **Ord-NLL** | `ordnll` (`--kappa`, Table 6) |
-| | | | **Ord-NLL+** | `ordnll_plus` (`--tau`, Table 7) |
+| CDR | `cdr` | | **Ord-NLL** | `ordnll` |
+| | | | **Ord-NLL+** | `ordnll_plus` |
 
-Hyperparameters are in `src/METHOD/config.yaml`.
+To reproduce all the tables:
 
-## Data
-
-The splits and noisy labels used in the paper are in `dataset/limuc/5fold/` (`label`: reference, `noisy_label`:
-used for training and validation). Use these files to reproduce the paper.
-
-| Directory | Noise | ρ |
-|---|---|---|
-| `quasi-0.2` / `quasi-0.4` | Quasi-Gaussian | 0.1 / 0.2 |
-| `truncated-0.2` / `truncated-0.4` | Truncated | 0.15 / 0.3 |
+```bash
+bash scripts/reproduce_main.sh      # Tables 2 and 4: all methods and noise settings
+bash scripts/reproduce_ablation.sh  # Table 6 (--kappa of ordnll) and Table 7 (--tau of ordnll_plus)
+```
 
 ## Notes
 
