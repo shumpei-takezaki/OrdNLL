@@ -3,7 +3,6 @@ import os
 import pandas as pd
 from sklearn.model_selection import StratifiedKFold
 
-from utils.utils import fix_seed
 
 if __name__ == '__main__':
     data_name = 'limuc'
@@ -11,7 +10,6 @@ if __name__ == '__main__':
     os.makedirs(save_folder, exist_ok=True)
 
     seed = 777
-    fix_seed(seed=seed)
 
     csv_file = pd.read_csv(f'./dataset/{data_name}/dataset_info_{data_name}.csv', index_col=0)
 

@@ -4,7 +4,6 @@ import argparse
 import numpy as np
 import pandas as pd
 
-from utils.utils import fix_seed
 
 def multiclass_noisify(y, P, random_state=1):
     """ Flip classes according to transition probability matrix T.
@@ -70,28 +69,12 @@ def truncated_noise(num_classes=4, noise_level=0.1):
                         transition_matrix[i,j] = 0.
     return transition_matrix
 
-def symmetric_noise(num_classes=4, noise_rate=0.1):
-    transition_matrix = np.zeros((num_classes, num_classes))
-    for i in range(num_classes):
-        for j in range(num_classes):
-            if i==j:
-                transition_matrix[i,j] = 1. - noise_rate
-            else:
-                transition_matrix[i,j] = noise_rate / (num_classes - 1)
-    return transition_matrix
-
 def make_transition_matrix(num_classes=4, noise_rate=0.2, noise_type='quasi'):
     if noise_type == 'quasi':
-        if noise_rate == 0.1:
-            noise_level = 0.05
-        elif noise_rate == 0.2:
+        if noise_rate == 0.2:
             noise_level = 0.1
-        elif noise_rate == 0.3:
-            noise_level = 0.15
         elif noise_rate == 0.4:
             noise_level = 0.2
-        elif noise_rate == 0.5:
-            noise_level = 0.25
         return quasi_noise(num_classes=num_classes, noise_level=noise_level)
     elif noise_type == 'truncated':
         if noise_rate == 0.2:
@@ -99,11 +82,8 @@ def make_transition_matrix(num_classes=4, noise_rate=0.2, noise_type='quasi'):
         elif noise_rate == 0.4:
             noise_level = 0.3
         return truncated_noise(num_classes=num_classes, noise_level=noise_level)
-    elif noise_type == 'symmetric':
-        return symmetric_noise(num_classes=num_classes, noise_rate=noise_rate)
 
 def main(args):
-    fix_seed(seed=args.seed)
     for k in range(5):
         save_dir = os.path.join(args.save_dir, f"{args.noise_type}-{args.noise_rate}", f"fold{k+1}")
         os.makedirs(save_dir, exist_ok=True)
@@ -127,8 +107,8 @@ if __name__ == '__main__':
     parser.add_argument('--root_dir', type=str, default='./dataset/limuc/5fold/clean/')
     parser.add_argument('--save_dir', type=str, default='./dataset/limuc/5fold/')
     parser.add_argument('--num_classes', type=int, default=4)
-    parser.add_argument('--noise_type', type=str, default='quasi', choices=['quasi', 'truncated', 'symmetric'])
-    parser.add_argument('--noise_rate', type=float, default=0.2, choices=[0.1,0.2,0.3,0.4,0.5])
+    parser.add_argument('--noise_type', type=str, default='quasi', choices=['quasi', 'truncated'])
+    parser.add_argument('--noise_rate', type=float, default=0.2, choices=[0.2, 0.4])
     parser.add_argument('--seed', type=int, default=777)
     args = parser.parse_args()
 
